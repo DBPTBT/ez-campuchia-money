@@ -93,6 +93,7 @@
   </div>
 
   <script>
+    // --- Firebase config (đã có của bạn) ---
     const firebaseConfig = {
       apiKey: "AIzaSyCQCqTF0PQ7FW4KE1w-u_VsyOVkBWIWy4w",
       authDomain: "ez-campuchia-money.firebaseapp.com",
@@ -102,109 +103,170 @@
       messagingSenderId: "718764161113",
       appId: "1:718764161113:web:7bcb4d86b7add1f4ced948"
     };
-
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    function addExpense(custom) {
-      let expense;
-      if (custom) {
-        expense = custom;
-      } else {
-        const date = document.getElementById("date").value;
-        const purpose = document.getElementById("purpose").value;
-        const payer = document.getElementById("payer").value;
-        const amount = parseFloat(document.getElementById("amount").value);
-        const participants = Array.from(document.querySelectorAll(".checkbox-group input:checked")).map(cb => cb.value);
-
-        if (!date || !purpose || !payer || !amount || participants.length === 0) {
-          alert("⚠️ Vui lòng nhập đầy đủ thông tin!");
-          return;
-        }
-        expense = { date, purpose, payer, amount, participants };
-
-        // Hiệu ứng nút
-        const btn = document.querySelector(".add-btn");
-        btn.innerText = "✅ Đã thêm!";
-        setTimeout(() => btn.innerText = "➕ Thêm khoản chi", 1500);
-
-        document.getElementById("purpose").value = "";
-        document.getElementById("amount").value = "";
-        document.querySelectorAll(".checkbox-group input").forEach(cb => cb.checked = false);
-      }
-
-      db.ref("expenses").push(expense);
+    // add expense (normal or custom object)
+    function addExpenseObj(obj) {
+      db.ref("expenses").push(obj);
     }
 
-    function resetData() {
+    // UI: thêm khoản chi từ form
+    document.getElementById("addBtn").addEventListener("click", () => {
+      const date = document.getElementById("date").value;
+      const purpose = document.getElementById("purpose").value.trim();
+      const payer = document.getElementById("payer").value;
+      const amount = parseFloat(document.getElementById("amount").value);
+      const participants = Array.from(document.querySelectorAll(".checkbox-group input:checked")).map(cb => cb.value);
+
+      if (!date || !purpose || !payer || !amount || participants.length === 0) {
+        alert("⚠️ Vui lòng nhập đầy đủ thông tin!");
+        return;
+      }
+
+      const obj = { date, purpose, payer, amount, participants, createdAt: Date.now() };
+      addExpenseObj(obj);
+
+      // hiệu ứng nút
+      const b = document.getElementById("addBtn");
+      b.textContent = "✅ Đã thêm!";
+      b.disabled = true;
+      setTimeout(()=> { b.textContent = "➕ Thêm khoản chi"; b.disabled = false; }, 1400);
+
+      // reset
+      document.getElementById("purpose").value = "";
+      document.getElementById("amount").value = "";
+      document.querySelectorAll(".checkbox-group input").forEach(cb=>cb.checked=false);
+    });
+
+    // reset toàn bộ
+    document.getElementById("resetBtn").addEventListener("click", () => {
       if (confirm("Bạn có chắc chắn muốn xóa toàn bộ dữ liệu?")) {
         db.ref("expenses").remove();
       }
-    }
+    });
 
+    // khi ấn Xóa trên 1 dòng nợ -> ghi 1 khoản settlement (trả nợ) vào DB
     function markDebtPaid(from, to, amount) {
-      if (confirm(`Xác nhận ${from} đã trả ${amount.toFixed(0)}k cho ${to}?`)) {
-        const today = new Date().toISOString().slice(0,10);
-        addExpense({
-          date: today,
-          purpose: "Trả nợ",
-          payer: from,
-          amount: amount,
-          participants: [from, to]
-        });
-      }
+      if (!confirm(`Xác nhận ${from} đã trả ${amount.toFixed(0)}k cho ${to}?`)) return;
+      const today = new Date().toISOString().slice(0,10);
+      // Đánh dấu settlement: true để tính toán trừ toàn bộ số tiền (không chia đôi)
+      const settlement = {
+        date: today,
+        purpose: "Trả nợ",
+        payer: from,
+        amount: amount,
+        participants: [from, to],
+        settlement: true,
+        createdAt: Date.now()
+      };
+      addExpenseObj(settlement);
+
+      // feedback nhỏ
+      const b = document.getElementById("addBtn");
+      b.textContent = "💸 Đã trả nợ";
+      setTimeout(()=> { b.textContent = "➕ Thêm khoản chi"; }, 1200);
     }
 
-    function render() {
+    // render dữ liệu: bảng chi tiết + tính debts
+    function renderAll() {
       db.ref("expenses").on("value", snapshot => {
-        const data = snapshot.val() || {};
+        const dataObj = snapshot.val() || {};
+        const rows = Object.values(dataObj);
+        // sort by createdAt (cũ -> mới)
+        rows.sort((a,b)=> (a.createdAt||0) - (b.createdAt||0));
+
+        // render details table
         const detailsBody = document.getElementById("detailsBody");
         detailsBody.innerHTML = "";
-        let debts = {};
-
-        Object.values(data).forEach(item => {
-          // render chi tiết
+        rows.forEach(item => {
           const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${item.date}</td>
-            <td>${item.purpose}</td>
-            <td>${item.payer}</td>
-            <td>${item.amount}</td>
-            <td>${item.participants.join(", ")}</td>
-          `;
+          const purposeLabel = item.purpose + (item.settlement ? " (Trả nợ)" : "");
+          tr.innerHTML = `<td>${item.date || ""}</td>
+                          <td>${purposeLabel}</td>
+                          <td>${item.payer || ""}</td>
+                          <td>${item.amount != null ? item.amount : ""}</td>
+                          <td>${(item.participants || []).join(", ")}</td>`;
           detailsBody.appendChild(tr);
+        });
 
-          // tính nợ
-          const share = item.amount / item.participants.length;
+        // tính debts
+        let debts = {}; // key: "A->B" value số tiền A nợ B (positive)
+        rows.forEach(item => {
+          if (!item.participants || !Array.isArray(item.participants)) return;
+          // Settlement: trừ toàn bộ amount từ from->to
+          if (item.settlement === true && item.participants.length === 2) {
+            const from = item.payer;
+            const to = item.participants.find(p=>p !== from);
+            if (!from || !to) return;
+            debts[`${from}->${to}`] = (debts[`${from}->${to}`] || 0) - (parseFloat(item.amount) || 0);
+            debts[`${to}->${from}`] = (debts[`${to}->${from}`] || 0) + (parseFloat(item.amount) || 0);
+            return;
+          }
+
+          // Normal expense: chia đều cho participants
+          const amount = parseFloat(item.amount) || 0;
+          const cnt = item.participants.length || 1;
+          const share = amount / cnt;
           item.participants.forEach(p => {
             if (p !== item.payer) {
-              debts[p+"->"+item.payer] = (debts[p+"->"+item.payer] || 0) + share;
-              debts[item.payer+"->"+p] = (debts[item.payer+"->"+p] || 0) - share;
+              // p owes payer share
+              debts[`${p}->${item.payer}`] = (debts[`${p}->${item.payer}`] || 0) + share;
+              debts[`${item.payer}->${p}`] = (debts[`${item.payer}->${p}`] || 0) - share;
             }
           });
         });
 
+        // Normalize small floats (avoid -0.000...)
+        for (const k in debts) {
+          if (Math.abs(debts[k]) < 0.005) debts[k] = 0;
+        }
+
+        // render debts (only positive values)
         const debtsDiv = document.getElementById("debts");
         debtsDiv.innerHTML = "";
-        for (let key in debts) {
-          if (debts[key] > 0.01) {
+        const entries = Object.entries(debts)
+          .filter(([k,v]) => v > 0.009)
+          .sort((a,b)=> b[1]-a[1]); // sort desc by amount
+
+        if (entries.length === 0) {
+          debtsDiv.innerHTML = "<p>Chưa có nợ (0)</p>";
+        } else {
+          entries.forEach(([key, val]) => {
             const [from, to] = key.split("->");
+            const amount = Math.round(val); // hiển thị integer nghìn đồng
             const row = document.createElement("div");
-            row.innerHTML = `${from} → ${to}: nợ ${debts[key].toFixed(0)}k 
-              <button class="delete-btn" onclick="markDebtPaid('${from}','${to}',${debts[key].toFixed(0)})">❌ Xóa</button>`;
+            row.style.display = "flex";
+            row.style.alignItems = "center";
+            row.style.justifyContent = "space-between";
+            row.style.padding = "6px 0";
+            row.style.borderBottom = "1px solid #f0f0f0";
+
+            const left = document.createElement("div");
+            left.textContent = `${from} → ${to}: nợ ${amount}k`;
+
+            const btn = document.createElement("button");
+            btn.className = "delete-btn";
+            btn.textContent = "❌ Xóa";
+            btn.title = `Đánh dấu ${from} đã trả ${amount}k cho ${to}`;
+            btn.addEventListener("click", ()=> markDebtPaid(from, to, amount));
+
+            row.appendChild(left);
+            row.appendChild(btn);
             debtsDiv.appendChild(row);
-          }
+          });
         }
       });
     }
-    render();
 
-    function setRandomBackground() {
+    renderAll();
+
+    // background random mỗi giờ
+    (function setRandomBackground(){
       const hour = new Date().getHours();
-      document.body.style.backgroundImage =
-        `url('https://source.unsplash.com/1600x900/?nature,city,travel&sig=${hour}')`;
-    }
-    setRandomBackground();
+      document.body.style.backgroundImage = `url('https://source.unsplash.com/1600x900/?food,meal,dinner&sig=${hour}')`;
+    })();
+
   </script>
 </body>
 </html>
