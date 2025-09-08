@@ -3,22 +3,130 @@
 <head>
   <meta charset="UTF-8">
   <title>Chia Tiền Ăn</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      margin: 20px; 
+      background: #f8f9fa; 
+    }
+    h1 { text-align: center; color: #2c3e50; }
+    h2 { margin-top: 30px; color: #34495e; }
+    form, .card { 
+      background: white; 
+      padding: 15px; 
+      border-radius: 8px; 
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1); 
+      margin-bottom: 20px;
+    }
+    label { display: block; margin-top: 10px; font-weight: bold; }
+    input, select { 
+      margin-top: 5px; 
+      padding: 8px; 
+      width: 100%; 
+      border: 1px solid #ccc; 
+      border-radius: 5px;
+    }
+    button { 
+      margin-top: 15px; 
+      padding: 10px 15px; 
+      border: none; 
+      border-radius: 5px; 
+      background: #3498db; 
+      color: white; 
+      font-weight: bold; 
+      cursor: pointer; 
+      width: 100%;
+    }
+    button:hover { background: #2980b9; }
+    #resetBtn { background: #e74c3c; }
+    #resetBtn:hover { background: #c0392b; }
+    table { 
+      border-collapse: collapse; 
+      width: 100%; 
+      margin-top: 10px; 
+      background: white; 
+    }
+    th, td { 
+      border: 1px solid #ddd; 
+      padding: 10px; 
+      text-align: center; 
+    }
+    th { background: #3498db; color: white; }
+    @media (max-width: 600px) {
+      table, thead, tbody, th, td, tr { display: block; }
+      th { display: none; }
+      td { 
+        text-align: right; 
+        padding-left: 50%; 
+        position: relative; 
+      }
+      td::before {
+        position: absolute; 
+        left: 10px; 
+        top: 10px; 
+        white-space: nowrap; 
+        font-weight: bold;
+      }
+    }
+  </style>
 </head>
 <body>
-  <h2>Chia Tiền Ăn</h2>
-  <input id="name" placeholder="Tên người" />
-  <input id="amount" type="number" placeholder="Số tiền đã trả" />
-  <button onclick="addData()">Thêm</button>
+  <h1>Chia Tiền Ăn</h1>
 
-  <h3>Danh sách</h3>
-  <ul id="list"></ul>
+  <!-- Form nhập dữ liệu -->
+  <form id="expenseForm">
+    <label>Ngày chi tiêu:
+      <input type="date" id="date" required>
+    </label>
+    <label>Mục đích:
+      <input type="text" id="purpose" placeholder="Ăn trưa, cà phê..." required>
+    </label>
+    <label>Người trả:
+      <select id="payer" required>
+        <option value="Tú Anh">Tú Anh</option>
+        <option value="Hải">Hải</option>
+        <option value="Nam">Nam</option>
+        <option value="Yến">Yến</option>
+        <option value="Hương kun">Hương kun</option>
+        <option value="Phong">Phong</option>
+        <option value="Minh kho">Minh kho</option>
+      </select>
+    </label>
+    <label>Số tiền (nghìn đồng):
+      <input type="number" id="amount" required>
+    </label>
+    <label>Người tham gia:</label>
+    <label><input type="checkbox" class="participant" value="Tú Anh"> Tú Anh</label>
+    <label><input type="checkbox" class="participant" value="Hải"> Hải</label>
+    <label><input type="checkbox" class="participant" value="Nam"> Nam</label>
+    <label><input type="checkbox" class="participant" value="Yến"> Yến</label>
+    <label><input type="checkbox" class="participant" value="Hương kun"> Hương kun</label>
+    <label><input type="checkbox" class="participant" value="Phong"> Phong</label>
+    <label><input type="checkbox" class="participant" value="Minh kho"> Minh kho</label>
+    
+    <button type="submit">➕ Thêm khoản chi</button>
+  </form>
 
+  <button id="resetBtn">♻️ Xóa toàn bộ dữ liệu</button>
+
+  <!-- Bảng nợ -->
+  <div class="card">
+    <h2>📊 Danh sách nợ</h2>
+    <div id="debts"></div>
+  </div>
+
+  <!-- Bảng chi tiêu -->
+  <div class="card">
+    <h2>📝 Danh sách chi tiêu</h2>
+    <div id="expensesList"></div>
+  </div>
+
+  <!-- Firebase SDK -->
   <script type="module">
-    // Import Firebase SDKs
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-    import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-database.js";
+    import { getDatabase, ref, push, set, get, child, remove } 
+      from "https://www.gstatic.com/firebasejs/12.2.1/firebase-database.js";
 
-    // Firebase config (của bạn)
     const firebaseConfig = {
       apiKey: "AIzaSyCQCqTF0PQ7FW4KE1w-u_VsyOVkBWIWy4w",
       authDomain: "ez-campuchia-money.firebaseapp.com",
@@ -29,46 +137,115 @@
       appId: "1:718764161113:web:7bcb4d86b7add1f4ced948"
     };
 
-    // Khởi tạo Firebase
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Hàm thêm dữ liệu
-    function addData() {
-      const name = document.getElementById("name").value.trim();
+    const form = document.getElementById("expenseForm");
+    const debtsDiv = document.getElementById("debts");
+    const expensesList = document.getElementById("expensesList");
+    const resetBtn = document.getElementById("resetBtn");
+
+    const members = ["Tú Anh","Hải","Nam","Yến","Hương kun","Phong","Minh kho"];
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const date = document.getElementById("date").value;
+      const purpose = document.getElementById("purpose").value;
+      const payer = document.getElementById("payer").value;
       const amount = parseFloat(document.getElementById("amount").value);
+      const participants = Array.from(document.querySelectorAll(".participant:checked"))
+                                .map(cb => cb.value);
 
-      if (name && !isNaN(amount)) {
-        push(ref(db, "chia-tien"), {
-          name: name,
-          amount: amount
+      if (participants.length === 0) {
+        alert("Chọn ít nhất một người tham gia!");
+        return;
+      }
+
+      const newExpenseRef = push(ref(db, "expenses"));
+      await set(newExpenseRef, { date, purpose, payer, amount, participants });
+
+      form.reset();
+      loadDebts();
+      loadExpenses();
+    });
+
+    async function loadDebts() {
+      const snapshot = await get(child(ref(db), "expenses"));
+      const expenses = snapshot.val() || {};
+
+      let debts = {};
+      members.forEach(a => {
+        debts[a] = {};
+        members.forEach(b => { if(a !== b) debts[a][b] = 0; });
+      });
+
+      Object.values(expenses).forEach(exp => {
+        const share = exp.amount / exp.participants.length;
+        exp.participants.forEach(person => {
+          if (person !== exp.payer) {
+            debts[person][exp.payer] += share;
+          }
         });
+      });
 
-        document.getElementById("name").value = "";
-        document.getElementById("amount").value = "";
-      }
+      members.forEach(a => {
+        members.forEach(b => {
+          if (a !== b) {
+            const debtAB = debts[a][b];
+            const debtBA = debts[b][a];
+            if (debtAB > debtBA) {
+              debts[a][b] = debtAB - debtBA;
+              debts[b][a] = 0;
+            } else {
+              debts[b][a] = debtBA - debtAB;
+              debts[a][b] = 0;
+            }
+          }
+        });
+      });
+
+      let html = "<table><tr><th>Người nợ</th><th>Người được nợ</th><th>Số tiền (nghìn)</th></tr>";
+      members.forEach(a => {
+        members.forEach(b => {
+          if (a !== b && debts[a][b] > 0) {
+            html += `<tr><td>${a}</td><td>${b}</td><td>${debts[a][b]}</td></tr>`;
+          }
+        });
+      });
+      html += "</table>";
+
+      debtsDiv.innerHTML = html;
     }
-    window.addData = addData; // export cho button onclick
 
-    // Hiển thị danh sách
-    const list = document.getElementById("list");
-    onValue(ref(db, "chia-tien"), (snapshot) => {
-      const data = snapshot.val();
-      list.innerHTML = "";
-      let total = 0, count = 0;
+    async function loadExpenses() {
+      const snapshot = await get(child(ref(db), "expenses"));
+      const expenses = snapshot.val() || {};
 
-      for (let id in data) {
-        total += data[id].amount;
-        count++;
-        list.innerHTML += `<li>${data[id].name}: ${data[id].amount} đ</li>`;
-      }
+      let html = "<table><tr><th>Ngày</th><th>Mục đích</th><th>Người trả</th><th>Số tiền</th><th>Người tham gia</th></tr>";
+      Object.values(expenses).forEach(exp => {
+        html += `<tr>
+                  <td>${exp.date}</td>
+                  <td>${exp.purpose}</td>
+                  <td>${exp.payer}</td>
+                  <td>${exp.amount}</td>
+                  <td>${exp.participants.join(", ")}</td>
+                </tr>`;
+      });
+      html += "</table>";
 
-      if (count > 0) {
-        const avg = total / count;
-        list.innerHTML += `<li><b>Tổng: ${total} đ</b></li>`;
-        list.innerHTML += `<li><b>Trung bình mỗi người: ${avg.toFixed(0)} đ</b></li>`;
+      expensesList.innerHTML = html;
+    }
+
+    resetBtn.addEventListener("click", async () => {
+      if (confirm("Bạn có chắc chắn muốn xóa toàn bộ dữ liệu không?")) {
+        await remove(ref(db, "expenses"));
+        debtsDiv.innerHTML = "";
+        expensesList.innerHTML = "";
       }
     });
+
+    loadDebts();
+    loadExpenses();
   </script>
 </body>
 </html>
