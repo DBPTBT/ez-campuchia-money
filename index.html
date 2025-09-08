@@ -2,68 +2,32 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Quản lý Chi Tiêu Nhóm</title>
-  <!-- Firebase SDK -->
+  <title>Công Nợ Ăn Trưa</title>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      background-size: cover;
-      background-position: center;
-      background-attachment: fixed;
-      transition: background-image 1s ease-in-out;
-    }
+    body { font-family: Arial, sans-serif; margin: 20px; background-size: cover; background-position: center; background-attachment: fixed; transition: background-image 1s ease-in-out; }
     h1 { margin-top: 0; }
-    .card {
-      background: rgba(255,255,255,0.9);
-      padding: 15px;
-      margin-bottom: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
+    .card { background: rgba(255,255,255,0.9); padding: 15px; margin-bottom: 20px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
     label { display: block; margin-top: 8px; }
-    input, select {
-      width: 100%; padding: 6px; margin-top: 4px;
-      border: 1px solid #ccc; border-radius: 6px;
-    }
-    button {
-      margin-top: 12px; padding: 10px 16px; border: none;
-      border-radius: 6px; cursor: pointer; font-size: 14px;
-      transition: transform 0.1s;
-    }
+    input, select { width: 100%; padding: 6px; margin-top: 4px; border: 1px solid #ccc; border-radius: 6px; }
+    button { margin-top: 12px; padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; transition: transform 0.1s; }
     button:hover { transform: scale(1.05); }
     .add-btn { background-color: #007bff; color: white; }
     .reset-btn { background-color: #dc3545; color: white; }
-
-    /* Excel mini table */
-    table {
-      width: 100%; border-collapse: collapse; font-size: 14px;
-      background: white; border-radius: 8px; overflow: hidden;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
+    .delete-btn { background-color: #ffc107; color: black; margin-left: 10px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
     th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
     th { background-color: #f5f5f5; font-weight: bold; }
     tr:nth-child(even) { background-color: #fafafa; }
     tr:hover { background-color: #f1f1f1; }
-
-    /* Checkboxes đẹp */
-    .checkbox-group {
-      display: flex; flex-wrap: wrap; gap: 15px; margin-top: 8px;
-    }
-    .checkbox-group label {
-      display: flex; flex-direction: column; align-items: center;
-      font-size: 13px; cursor: pointer;
-    }
-    .checkbox-group input {
-      width: 18px; height: 18px; margin-bottom: 4px;
-      accent-color: #007bff;
-    }
+    .checkbox-group { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 8px; }
+    .checkbox-group label { display: flex; flex-direction: column; align-items: center; font-size: 13px; cursor: pointer; }
+    .checkbox-group input { width: 18px; height: 18px; margin-bottom: 4px; accent-color: #007bff; }
   </style>
 </head>
 <body>
-  <h1>📒 Quản lý Chi Tiêu Nhóm</h1>
+  <h1>📒 Công Nợ Ăn Trưa - Ma Trận Nợ Nần</h1>
 
   <!-- Form nhập -->
   <div class="card">
@@ -115,7 +79,7 @@
           <th>Mục đích</th>
           <th>Người trả</th>
           <th>Số tiền (k)</th>
-          <th>Người tham gia</th>
+          <th>Danh sách con nợ</th>
         </tr>
       </thead>
       <tbody id="detailsBody"></tbody>
@@ -124,12 +88,11 @@
 
   <!-- Danh sách nợ -->
   <div class="card">
-    <h2>📊 Danh sách nợ</h2>
+    <h2>📊 Danh sách con nợ - Ma trận nợ nần</h2>
     <div id="debts"></div>
   </div>
 
   <script>
-    // Config Firebase của bạn
     const firebaseConfig = {
       apiKey: "AIzaSyCQCqTF0PQ7FW4KE1w-u_VsyOVkBWIWy4w",
       authDomain: "ez-campuchia-money.firebaseapp.com",
@@ -143,35 +106,52 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    function addExpense() {
-      const date = document.getElementById("date").value;
-      const purpose = document.getElementById("purpose").value;
-      const payer = document.getElementById("payer").value;
-      const amount = parseFloat(document.getElementById("amount").value);
-      const participants = Array.from(document.querySelectorAll(".checkbox-group input:checked")).map(cb => cb.value);
+    function addExpense(custom) {
+      let expense;
+      if (custom) {
+        expense = custom;
+      } else {
+        const date = document.getElementById("date").value;
+        const purpose = document.getElementById("purpose").value;
+        const payer = document.getElementById("payer").value;
+        const amount = parseFloat(document.getElementById("amount").value);
+        const participants = Array.from(document.querySelectorAll(".checkbox-group input:checked")).map(cb => cb.value);
 
-      if (!date || !purpose || !payer || !amount || participants.length === 0) {
-        alert("⚠️ Vui lòng nhập đầy đủ thông tin!");
-        return;
+        if (!date || !purpose || !payer || !amount || participants.length === 0) {
+          alert("⚠️ Vui lòng nhập đầy đủ thông tin!");
+          return;
+        }
+        expense = { date, purpose, payer, amount, participants };
+
+        // Hiệu ứng nút
+        const btn = document.querySelector(".add-btn");
+        btn.innerText = "✅ Đã thêm!";
+        setTimeout(() => btn.innerText = "➕ Thêm khoản chi", 1500);
+
+        document.getElementById("purpose").value = "";
+        document.getElementById("amount").value = "";
+        document.querySelectorAll(".checkbox-group input").forEach(cb => cb.checked = false);
       }
 
-      const expense = { date, purpose, payer, amount, participants };
       db.ref("expenses").push(expense);
-
-      // Hiệu ứng nút
-      const btn = document.querySelector(".add-btn");
-      btn.innerText = "✅ Đã thêm!";
-      setTimeout(() => btn.innerText = "➕ Thêm khoản chi", 1500);
-
-      // Reset form
-      document.getElementById("purpose").value = "";
-      document.getElementById("amount").value = "";
-      document.querySelectorAll(".checkbox-group input").forEach(cb => cb.checked = false);
     }
 
     function resetData() {
       if (confirm("Bạn có chắc chắn muốn xóa toàn bộ dữ liệu?")) {
         db.ref("expenses").remove();
+      }
+    }
+
+    function markDebtPaid(from, to, amount) {
+      if (confirm(`Xác nhận ${from} đã trả ${amount.toFixed(0)}k cho ${to}?`)) {
+        const today = new Date().toISOString().slice(0,10);
+        addExpense({
+          date: today,
+          purpose: "Trả nợ",
+          payer: from,
+          amount: amount,
+          participants: [from, to]
+        });
       }
     }
 
@@ -183,7 +163,7 @@
         let debts = {};
 
         Object.values(data).forEach(item => {
-          // render bảng chi tiết
+          // render chi tiết
           const tr = document.createElement("tr");
           tr.innerHTML = `
             <td>${item.date}</td>
@@ -204,20 +184,21 @@
           });
         });
 
-        // render danh sách nợ
         const debtsDiv = document.getElementById("debts");
         debtsDiv.innerHTML = "";
         for (let key in debts) {
           if (debts[key] > 0.01) {
             const [from, to] = key.split("->");
-            debtsDiv.innerHTML += `${from} → ${to}: nợ ${debts[key].toFixed(0)}k<br>`;
+            const row = document.createElement("div");
+            row.innerHTML = `${from} → ${to}: nợ ${debts[key].toFixed(0)}k 
+              <button class="delete-btn" onclick="markDebtPaid('${from}','${to}',${debts[key].toFixed(0)})">❌ Xóa</button>`;
+            debtsDiv.appendChild(row);
           }
         }
       });
     }
     render();
 
-    // Background random mỗi giờ
     function setRandomBackground() {
       const hour = new Date().getHours();
       document.body.style.backgroundImage =
