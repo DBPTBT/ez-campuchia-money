@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chia Tiền Ăn Online</title>
+  <title>EZ CAMPUCHIA MONEY</title>
   <style>
     body { font-family: Arial, sans-serif; background: #f9f9f9; margin: 0; padding: 20px; }
     h1 { text-align: center; color: #333; }
@@ -17,10 +17,12 @@
              border-radius: 8px; padding: 12px; position: fixed; z-index: 1; left: 50%; bottom: 30px; font-size: 16px;
              box-shadow: 0 4px 6px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.5s, bottom 0.5s; }
     #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
+    .participants label { display: inline-block; margin: 5px 10px 0 0; }
+    .expense-item { border-bottom: 1px solid #eee; padding: 5px 0; font-size: 14px; }
   </style>
 </head>
 <body>
-  <h1>🍽️ Chia Tiền Ăn Online</h1>
+  <h1>🍽️ EZ CAMPUCHIA MONEY</h1>
 
   <!-- Form nhập chi tiêu -->
   <div class="card">
@@ -38,10 +40,15 @@
       <label>Số tiền (nghìn đồng):</label>
       <input type="number" id="amount" required>
       <label>Những người tham gia:</label>
-      <select id="participants" multiple size="7" required>
-        <option>Tú Anh</option><option>Hải</option><option>Nam</option>
-        <option>Yến</option><option>Hương kun</option><option>Phong</option><option>Minh kho</option>
-      </select>
+      <div class="participants">
+        <label><input type="checkbox" value="Tú Anh"> Tú Anh</label>
+        <label><input type="checkbox" value="Hải"> Hải</label>
+        <label><input type="checkbox" value="Nam"> Nam</label>
+        <label><input type="checkbox" value="Yến"> Yến</label>
+        <label><input type="checkbox" value="Hương kun"> Hương kun</label>
+        <label><input type="checkbox" value="Phong"> Phong</label>
+        <label><input type="checkbox" value="Minh kho"> Minh kho</label>
+      </div>
       <button type="submit" id="submitBtn">➕ Thêm khoản chi</button>
     </form>
   </div>
@@ -50,6 +57,12 @@
   <div class="card">
     <h2>📊 Danh sách nợ</h2>
     <div id="debts"></div>
+  </div>
+
+  <!-- Danh sách chi tiết -->
+  <div class="card">
+    <h2>📜 Danh sách chi tiết</h2>
+    <div id="details"></div>
   </div>
 
   <!-- Nút xóa toàn bộ -->
@@ -62,11 +75,9 @@
 
   <!-- Firebase SDK -->
   <script type="module">
-    // Import Firebase SDK
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
-    import { getDatabase, ref, set, get, child, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-database.js";
+    import { getDatabase, ref, set, get, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-database.js";
 
-    // Config Firebase của bạn
     const firebaseConfig = {
       apiKey: "AIzaSyCQCqTF0PQ7FW4KE1w-u_VsyOVkBWIWy4w",
       authDomain: "ez-campuchia-money.firebaseapp.com",
@@ -77,7 +88,6 @@
       appId: "1:718764161113:web:7bcb4d86b7add1f4ced948"
     };
 
-    // Khởi tạo Firebase
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
@@ -110,10 +120,31 @@
       }
     }
 
-    // Lắng nghe dữ liệu từ Firebase (Realtime)
+    function renderDetails(snapshot) {
+      const detailsDiv = document.getElementById("details");
+      detailsDiv.innerHTML = "";
+      if (!snapshot.exists()) {
+        detailsDiv.innerHTML = "<p>Chưa có khoản chi nào</p>";
+        return;
+      }
+      snapshot.forEach(child => {
+        const data = child.val();
+        const div = document.createElement("div");
+        div.className = "expense-item";
+        div.innerText = `${data.date} - ${data.payer} trả ${data.amount}k cho [${data.participants.join(", ")}] (${data.purpose})`;
+        detailsDiv.appendChild(div);
+      });
+    }
+
+    // Lắng nghe dữ liệu nợ
     onValue(ref(db, "debts"), (snapshot) => {
       debts = snapshot.val() || {};
       renderDebts();
+    });
+
+    // Lắng nghe chi tiết chi tiêu
+    onValue(ref(db, "expenses"), (snapshot) => {
+      renderDetails(snapshot);
     });
 
     // Xử lý thêm khoản chi
@@ -123,7 +154,7 @@
       const purpose = document.getElementById("purpose").value;
       const payer = document.getElementById("payer").value;
       const amount = parseInt(document.getElementById("amount").value);
-      const participants = Array.from(document.getElementById("participants").selectedOptions).map(o => o.value);
+      const participants = Array.from(document.querySelectorAll(".participants input:checked")).map(o => o.value);
 
       if (!date || !purpose || !payer || !amount || participants.length === 0) {
         alert("⚠️ Vui lòng nhập đầy đủ thông tin!");
@@ -150,6 +181,9 @@
 
       saveDebts();
 
+      // Lưu chi tiết
+      push(ref(db, "expenses"), { date, purpose, payer, amount, participants });
+
       // Hiệu ứng nút + popup
       const submitBtn = document.getElementById("submitBtn");
       submitBtn.disabled = true;
@@ -170,6 +204,7 @@
     document.getElementById("resetBtn").addEventListener("click", function() {
       if (confirm("⚠️ Bạn có chắc muốn xóa toàn bộ dữ liệu không?")) {
         remove(ref(db, "debts"));
+        remove(ref(db, "expenses"));
         showToast("🗑️ Đã xóa toàn bộ dữ liệu!");
       }
     });
