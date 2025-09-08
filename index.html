@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Chia Tiền Ăn</title>
+</head>
+<body>
+  <h2>Chia Tiền Ăn</h2>
+  <input id="name" placeholder="Tên người" />
+  <input id="amount" type="number" placeholder="Số tiền đã trả" />
+  <button onclick="addData()">Thêm</button>
+
+  <h3>Danh sách</h3>
+  <ul id="list"></ul>
+
+  <script type="module">
+    // Import Firebase SDKs
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+    import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-database.js";
+
+    // Firebase config (của bạn)
+    const firebaseConfig = {
+      apiKey: "AIzaSyCQCqTF0PQ7FW4KE1w-u_VsyOVkBWIWy4w",
+      authDomain: "ez-campuchia-money.firebaseapp.com",
+      databaseURL: "https://ez-campuchia-money-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "ez-campuchia-money",
+      storageBucket: "ez-campuchia-money.firebasestorage.app",
+      messagingSenderId: "718764161113",
+      appId: "1:718764161113:web:7bcb4d86b7add1f4ced948"
+    };
+
+    // Khởi tạo Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Hàm thêm dữ liệu
+    function addData() {
+      const name = document.getElementById("name").value.trim();
+      const amount = parseFloat(document.getElementById("amount").value);
+
+      if (name && !isNaN(amount)) {
+        push(ref(db, "chia-tien"), {
+          name: name,
+          amount: amount
+        });
+
+        document.getElementById("name").value = "";
+        document.getElementById("amount").value = "";
+      }
+    }
+    window.addData = addData; // export cho button onclick
+
+    // Hiển thị danh sách
+    const list = document.getElementById("list");
+    onValue(ref(db, "chia-tien"), (snapshot) => {
+      const data = snapshot.val();
+      list.innerHTML = "";
+      let total = 0, count = 0;
+
+      for (let id in data) {
+        total += data[id].amount;
+        count++;
+        list.innerHTML += `<li>${data[id].name}: ${data[id].amount} đ</li>`;
+      }
+
+      if (count > 0) {
+        const avg = total / count;
+        list.innerHTML += `<li><b>Tổng: ${total} đ</b></li>`;
+        list.innerHTML += `<li><b>Trung bình mỗi người: ${avg.toFixed(0)} đ</b></li>`;
+      }
+    });
+  </script>
+</body>
+</html>
