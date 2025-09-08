@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="utf-8" />
-  <title>Quản lý Chi Tiêu Nhóm</title>
+  <title>Ma Trận Nợ Nần</title>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -65,7 +65,7 @@
   </style>
 </head>
 <body>
-  <h1>📒 Quản lý Chi Tiêu Nhóm</h1>
+  <h1>📒 Công Nợ Ăn Trưa - Ma Trận Nợ Nần</h1>
 
   <div class="card">
     <label>Ngày chi</label>
@@ -85,7 +85,7 @@
     <label>Số tiền (nghìn đồng)</label>
     <input id="amount" type="number" min="0" step="1">
 
-    <label>Những người tham gia</label>
+    <label>Những con nợ</label>
     <div class="checkbox-group">
       <label><input type="checkbox" value="Tú Anh">Tú Anh</label>
       <label><input type="checkbox" value="Hải">Hải</label>
@@ -114,7 +114,7 @@
   </div>
 
   <div class="card">
-    <h2>📊 Danh sách nợ</h2>
+    <h2>📊 Danh sách con nợ</h2>
     <div id="debts"></div>
   </div>
 
