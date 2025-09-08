@@ -1,59 +1,78 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <title>Công Nợ Ăn Trưa</title>
+  <meta charset="utf-8" />
+  <title>Quản lý Chi Tiêu Nhóm</title>
+  <!-- Firebase compat -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; background-size: cover; background-position: center; background-attachment: fixed; transition: background-image 1s ease-in-out; }
-    h1 { margin-top: 0; }
-    .card { background: rgba(255,255,255,0.9); padding: 15px; margin-bottom: 20px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-    label { display: block; margin-top: 8px; }
-    input, select { width: 100%; padding: 6px; margin-top: 4px; border: 1px solid #ccc; border-radius: 6px; }
-    button { margin-top: 12px; padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; transition: transform 0.1s; }
-    button:hover { transform: scale(1.05); }
-    .add-btn { background-color: #007bff; color: white; }
-    .reset-btn { background-color: #dc3545; color: white; }
-    .delete-btn { background-color: #ffc107; color: black; margin-left: 10px; }
-    table { width: 100%; border-collapse: collapse; font-size: 14px; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-    th { background-color: #f5f5f5; font-weight: bold; }
-    tr:nth-child(even) { background-color: #fafafa; }
-    tr:hover { background-color: #f1f1f1; }
-    .checkbox-group { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 8px; }
-    .checkbox-group label { display: flex; flex-direction: column; align-items: center; font-size: 13px; cursor: pointer; }
-    .checkbox-group input { width: 18px; height: 18px; margin-bottom: 4px; accent-color: #007bff; }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 16px;
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      transition: background-image 1s ease-in-out;
+    }
+    h1 { margin: 8px 0 16px; font-size: 20px; }
+    .card {
+      background: rgba(255,255,255,0.92);
+      padding: 12px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      margin-bottom: 14px;
+    }
+    label { display:block; margin-top:8px; font-size:14px; }
+    input, select { width:100%; padding:8px; margin-top:6px; border-radius:6px; border:1px solid #ccc; box-sizing:border-box; }
+    .actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+    button { padding:10px 14px; border-radius:8px; border:0; cursor:pointer; font-size:14px; }
+    .add-btn { background:#007bff; color:white; }
+    .reset-btn { background:#dc3545; color:white; }
+    .delete-btn { background:#ffb703; color:#000; border-radius:6px; padding:6px 10px; cursor:pointer; }
+
+    /* table */
+    table { width:100%; border-collapse:collapse; font-size:13px; background:white; border-radius:8px; overflow:hidden; }
+    th, td { border:1px solid #e6e6e6; padding:8px; text-align:center; }
+    th { background:#f7f7f7; font-weight:600; }
+    tr:nth-child(even){ background:#fbfbfb; }
+    tr:hover{ background:#f1f9ff; }
+
+    /* checkbox group */
+    .checkbox-group { display:flex; flex-wrap:wrap; gap:12px; margin-top:8px; }
+    .checkbox-group label { display:flex; align-items:center; gap:8px; background:#fafafa; padding:6px 10px; border-radius:8px; cursor:pointer; font-size:13px; }
+    .checkbox-group input[type="checkbox"] { width:16px; height:16px; accent-color:#007bff; }
+
+    /* small screens */
+    @media (max-width:600px){
+      th,td { font-size:12px; padding:6px; }
+      .checkbox-group label { font-size:12px; padding:6px 8px; }
+    }
   </style>
 </head>
 <body>
-  <h1>📒 Công Nợ Ăn Trưa - Ma Trận Nợ Nần</h1>
+  <h1>📒 Quản lý Chi Tiêu Nhóm</h1>
 
-  <!-- Form nhập -->
   <div class="card">
-    <label>Ngày chi:</label>
-    <input type="date" id="date">
+    <label>Ngày chi</label>
+    <input id="date" type="date">
 
-    <label>Mục đích:</label>
-    <input type="text" id="purpose" placeholder="Ví dụ: Liên hoan, nhậu...">
+    <label>Mục đích</label>
+    <input id="purpose" type="text" placeholder="Ví dụ: Liên hoan, nhậu...">
 
-    <label>Người trả tiền:</label>
+    <label>Người trả tiền</label>
     <select id="payer">
       <option value="">-- Chọn người --</option>
-      <option>Tú Anh</option>
-      <option>Hải</option>
-      <option>Nam</option>
-      <option>Yến</option>
-      <option>Hương kun</option>
-      <option>Phong</option>
-      <option>Minh kho</option>
-      <option>Tuấn Lùn</option>
+      <option>Tú Anh</option><option>Hải</option><option>Nam</option>
+      <option>Yến</option><option>Hương kun</option><option>Phong</option>
+      <option>Minh kho</option><option>Tuấn Lùn</option>
     </select>
 
-    <label>Số tiền (nghìn đồng):</label>
-    <input type="number" id="amount">
+    <label>Số tiền (nghìn đồng)</label>
+    <input id="amount" type="number" min="0" step="1">
 
-    <label>Những người tham gia:</label>
+    <label>Những người tham gia</label>
     <div class="checkbox-group">
       <label><input type="checkbox" value="Tú Anh">Tú Anh</label>
       <label><input type="checkbox" value="Hải">Hải</label>
@@ -65,30 +84,24 @@
       <label><input type="checkbox" value="Tuấn Lùn">Tuấn Lùn</label>
     </div>
 
-    <button class="add-btn" onclick="addExpense()">➕ Thêm khoản chi</button>
-    <button class="reset-btn" onclick="resetData()">🗑️ Xóa toàn bộ dữ liệu</button>
+    <div class="actions">
+      <button class="add-btn" id="addBtn">➕ Thêm khoản chi</button>
+      <button class="reset-btn" id="resetBtn">🗑️ Xóa toàn bộ dữ liệu</button>
+    </div>
   </div>
 
-  <!-- Bảng chi tiết -->
   <div class="card">
     <h2>📅 Danh sách chi tiết</h2>
     <table>
       <thead>
-        <tr>
-          <th>Ngày</th>
-          <th>Mục đích</th>
-          <th>Người trả</th>
-          <th>Số tiền (k)</th>
-          <th>Danh sách con nợ</th>
-        </tr>
+        <tr><th>Ngày</th><th>Mục đích</th><th>Người trả</th><th>Số tiền (k)</th><th>Người tham gia</th></tr>
       </thead>
       <tbody id="detailsBody"></tbody>
     </table>
   </div>
 
-  <!-- Danh sách nợ -->
   <div class="card">
-    <h2>📊 Danh sách con nợ - Ma trận nợ nần</h2>
+    <h2>📊 Danh sách nợ</h2>
     <div id="debts"></div>
   </div>
 
