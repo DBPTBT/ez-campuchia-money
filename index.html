@@ -4,7 +4,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Ma Trận Nợ Nần - V2.2</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -16,38 +15,33 @@
     :root {
       --bg-outside: #f1f5f9; 
       --bg-inside: #ffffff;
-      --bg-input: #f8fafc; /* Màu input mới cho Light Mode - Đậm hơn xíu */
+      --bg-input: #f8fafc; 
       --primary: #3b82f6; 
       --accent: #ec4899;
       --text: #1e293b; 
-      --text-muted: #64748b;
       --border: #e2e8f0; 
-      --nav-bg: #ffffff;
     }
 
     [data-theme="dark"] {
       --bg-outside: #020617; 
       --bg-inside: #0a1122;
-      --bg-input: #111a2e; /* Màu input cho Dark Mode */
+      --bg-input: #111a2e;
       --primary: #22d3ee; 
       --accent: #d946ef;
       --text: #f1f5f9; 
-      --text-muted: #94a3b8;
       --border: #1e293b; 
-      --nav-bg: #0a1122;
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { font-family: 'Lexend', sans-serif; margin: 0; background-color: var(--bg-outside); color: var(--text); display: flex; justify-content: center; transition: background 0.3s ease; }
+    body { font-family: 'Lexend', sans-serif; margin: 0; background-color: var(--bg-outside); color: var(--text); display: flex; justify-content: center; }
 
-    .app-shell { width: 100%; max-width: 500px; background-color: var(--bg-inside); min-height: 100vh; position: relative; display: flex; flex-direction: column; box-shadow: 0 0 50px rgba(0,0,0,0.1); }
+    .app-shell { width: 100%; max-width: 500px; background-color: var(--bg-inside); min-height: 100vh; display: flex; flex-direction: column; position: relative; }
 
-    header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg-inside); z-index: 100; border-bottom: 1px solid var(--border); }
+    header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg-inside); z-index: 100; }
     header h1 { font-size: 1.2rem; margin: 0; background: linear-gradient(90deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; }
 
     .theme-toggle { background: var(--bg-input); border: 1px solid var(--border); width: 40px; height: 40px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
 
-    /* CARD VỚI VIỀN RGB 0.6PX DÙNG MASK (CHỈ HIỆN Ở DARK MODE) */
     .card { background: var(--bg-inside); border-radius: 20px; padding: 20px; margin: 15px; position: relative; border: 1px solid var(--border); overflow: hidden; }
     
     @keyframes rotateRGB { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
@@ -61,18 +55,12 @@
       -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
     }
 
-    .section-title { font-weight: 700; margin-bottom: 15px; font-size: 0.9rem; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; }
+    .section-title { font-weight: 700; margin-bottom: 15px; font-size: 0.9rem; color: var(--primary); text-transform: uppercase; }
 
-    /* ĐIỀU CHỈNH INPUT: Đậm hơn xíu để phân biệt với nền */
     input, select { 
-      width: 100%; padding: 14px; border-radius: 12px; 
-      border: 1px solid var(--border); 
-      background: var(--bg-input); 
-      color: var(--text); 
-      font-family: inherit; margin-bottom: 10px; outline: none; 
-      transition: all 0.2s;
+      width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border); 
+      background: var(--bg-input); color: var(--text); font-family: inherit; margin-bottom: 10px; outline: none; 
     }
-    input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
 
     .checkbox-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
     
@@ -86,38 +74,40 @@
 
     .btn { width: 100%; padding: 16px; border-radius: 15px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; }
     .btn-primary { background: linear-gradient(90deg, var(--primary), var(--accent)); color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .btn-primary:active { transform: scale(0.98); }
 
     .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
     .debt-row { background: var(--bg-input); padding: 15px; border-radius: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); }
 
-    .nav-bottom { position: fixed; bottom: 0; width: 100%; max-width: 500px; background: var(--nav-bg); display: flex; justify-content: space-around; padding: 10px 0 25px; border-top: 1px solid var(--border); z-index: 101; }
-    .nav-item { flex: 1; text-align: center; color: var(--text-muted); cursor: pointer; font-size: 0.7rem; }
+    /* FIXED NAV BOTTOM WITH ICONS */
+    .nav-bottom { position: fixed; bottom: 0; width: 100%; max-width: 500px; background: var(--bg-inside); display: flex; justify-content: space-around; padding: 10px 0 25px; border-top: 1px solid var(--border); z-index: 101; }
+    .nav-item { flex: 1; text-align: center; color: #64748b; cursor: pointer; font-size: 0.75rem; transition: 0.2s; }
     .nav-item.active { color: var(--primary); font-weight: 700; }
-    .nav-icon { font-size: 1.3rem; display: block; margin-bottom: 2px; }
+    .nav-icon { font-size: 1.4rem; display: block; margin-bottom: 4px; }
 
     .hidden { display: none !important; }
-    .page { padding-bottom: 100px; }
+    .page { padding-bottom: 110px; }
   </style>
 </head>
 <body>
 
   <div class="app-shell">
     <header>
-      <h1>Ma Trận Nợ Nần</h1>
+      <h1>Ma Trận Nợ Nần - V2.2 </h1>
       <button class="theme-toggle" id="themeToggle">☀️</button>
     </header>
 
     <div id="page-entry" class="page">
       <div class="card">
         <div class="section-title">💸 NHẬP KHOẢN CHI</div>
-        <input id="purpose" placeholder="Mục chi (Ví dụ: Phở bò)">
+        <input id="purpose" placeholder="Mục chi (Ví dụ: Trà sữa)">
         <div style="display: flex; gap: 10px;">
           <input id="date" type="date" style="flex: 1.2;">
           <input id="amount" type="number" placeholder="Số tiền (k)" style="flex: 0.8;">
         </div>
-        <label style="font-size: 0.75rem; font-weight: 700; margin-bottom: 6px; display: block; opacity: 0.7;">AI TRẢ TIỀN?</label>
+        <label style="font-size: 0.75rem; font-weight: 700; margin-bottom: 6px; display: block; opacity: 0.7;">CHỦ NỢ</label>
         <select id="payer"></select>
-        <label style="font-size: 0.75rem; font-weight: 700; margin-bottom: 10px; display: block; opacity: 0.7;">CHIA CHO NHỮNG AI?</label>
+        <label style="font-size: 0.75rem; font-weight: 700; margin-bottom: 10px; display: block; opacity: 0.7;">DANH SÁCH CON NỢ KHÓ ĐÒI</label>
         <div class="checkbox-group" id="participantsGroup"></div>
         <button class="btn btn-primary" id="addExpenseBtn">XÁC NHẬN GIAO DỊCH</button>
       </div>
@@ -129,22 +119,21 @@
         <div id="debts"></div>
       </div>
       <div class="card">
-        <div class="section-title">🕒 NHẬT KÝ</div>
+        <div class="section-title">🕒 NHẬT KÝ CHI TIÊU</div>
         <div id="detailsBody"></div>
         <div style="text-align: center; margin-top: 20px;">
-          <button id="clearBtn" style="background:none; border:none; color: #ef4444; font-size: 0.7rem; cursor: pointer; text-decoration: underline;">Reset Dữ Liệu</button>
+          <button id="clearBtn" style="background:none; border:none; color: #ef4444; font-size: 0.7rem; text-decoration: underline; cursor: pointer;">Xóa sạch toàn bộ dữ liệu</button>
         </div>
       </div>
     </div>
 
     <nav class="nav-bottom">
-      <div class="nav-item active" id="btn-nav-entry"><span class="nav-icon">✏️</span> Nhập liệu</div>
-      <div class="nav-item" id="btn-nav-history"><span class="nav-icon">📊</span> Ma trận nợ</div>
+      <div class="nav-item active" id="btn-nav-entry"><span class="nav-icon">✏️</span>Nhập liệu</div>
+      <div class="nav-item" id="btn-nav-history"><span class="nav-icon">📊</span>Ma trận nợ</div>
     </nav>
   </div>
 
   <script>
-    // --- FIREBASE VÀ LOGIC GIỮ NGUYÊN TỪ BẢN V2.2 ---
     const firebaseConfig = {
       apiKey: "AIzaSyCQCqTF0PQ7FW4KE1w-u_VsyOVkBWIWy4w",
       authDomain: "ez-campuchia-money.firebaseapp.com",
@@ -157,6 +146,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
+    // Tab Logic
     const navItems = { entry: document.getElementById('btn-nav-entry'), history: document.getElementById('btn-nav-history') };
     const pages = { entry: document.getElementById('page-entry'), history: document.getElementById('page-history') };
 
@@ -169,11 +159,13 @@
     navItems.entry.onclick = () => switchPage('entry');
     navItems.history.onclick = () => switchPage('history');
 
+    // Theme Switcher
     const themeBtn = document.getElementById('themeToggle');
-    function setTh(t) { document.documentElement.setAttribute('data-theme', t); themeBtn.innerHTML = t === 'dark' ? '🌙' : '☀️'; localStorage.setItem('theme_debt', t); }
+    function setTh(t) { document.documentElement.setAttribute('data-theme', t); themeBtn.innerHTML = t === 'dark' ? '🌙' : '☀️'; localStorage.setItem('debt_theme_v2', t); }
     themeBtn.onclick = () => setTh(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
-    setTh(localStorage.getItem('theme_debt') || 'light');
+    setTh(localStorage.getItem('debt_theme_v2') || 'light');
 
+    // Firebase Data
     let users = [];
     db.ref('users').on('value', s => {
       users = Object.entries(s.val() || {}).map(([k,v]) => v.name);
@@ -186,37 +178,47 @@
       const rows = Object.entries(data).map(([k, v]) => ({ key: k, ...v }));
       rows.sort((a,b) => b.createdAt - a.createdAt);
 
+      // Render History
       document.getElementById('detailsBody').innerHTML = rows.map(r => `
         <div class="history-item">
-          <div><b>${r.purpose}</b><br><small style="opacity:0.6">${r.payer} -> ${r.amount}k</small></div>
+          <div><b>${r.purpose}</b><br><small style="opacity:0.6">${r.payer} trả ${r.amount}k</small></div>
           <button onclick="delEx('${r.key}')" style="background:none; border:none; font-size:1.1rem; cursor:pointer">🗑️</button>
         </div>
-      `).join('') || 'Chưa có dữ liệu';
+      `).join('') || '<p style="text-align:center; opacity:0.5">Chưa có giao dịch</p>';
 
+      // Matrix Logic with Rounding
       let matrix = {};
       rows.forEach(r => {
-        if(!r.participants) return;
+        if(!r.participants || r.participants.length === 0) return;
         if(r.settlement) {
-          const f = r.payer, t = r.participants.find(p => p !== f);
-          if(f && t) { matrix[`${f}->${t}`] = (matrix[`${f}->${t}`] || 0) - Number(r.amount); matrix[`${t}->${f}`] = (matrix[`${t}->${f}`] || 0) + Number(r.amount); }
+          const from = r.payer; const to = r.participants.find(p => p !== from);
+          if(from && to) { matrix[`${from}->${to}`] = (matrix[`${from}->${to}`] || 0) - Number(r.amount); matrix[`${to}->${from}`] = (matrix[`${to}->${from}`] || 0) + Number(r.amount); }
         } else {
+          // TRẢ LẠI LOGIC LÀM TRÒN
           const share = Math.floor(Number(r.amount) / r.participants.length);
-          r.participants.forEach(p => { if(p !== r.payer) { matrix[`${p}->${r.payer}`] = (matrix[`${p}->${r.payer}`] || 0) + share; matrix[`${r.payer}->${p}`] = (matrix[`${r.payer}->${p}`] || 0) - share; }});
+          r.participants.forEach(p => {
+            if(p !== r.payer) {
+              matrix[`${p}->${r.payer}`] = (matrix[`${p}->${r.payer}`] || 0) + share;
+              matrix[`${r.payer}->${p}`] = (matrix[`${r.payer}->${p}`] || 0) - share;
+            }
+          });
         }
       });
 
-      const debts = Object.entries(matrix).filter(([k, v]) => v > 0.9);
-      document.getElementById('debts').innerHTML = debts.map(([k, v]) => {
-        const [f, t] = k.split('->');
-        return `<div class="debt-row"><span><b>${f}</b> ➔ ${to}: <b>${Math.round(v)}k</b></span><button class="btn" style="width:auto; padding:8px 12px; background:#10b981; color:white; font-size:0.75rem" onclick="pay('${f}','${t}',${Math.round(v)})">Trả</button></div>`;
+      const entries = Object.entries(matrix).filter(([k, v]) => v > 0.9);
+      document.getElementById('debts').innerHTML = entries.map(([key, val]) => {
+        const [f, t] = key.split('->');
+        return `<div class="debt-row"><span><b>${f}</b> ➔ ${t}: <b>${Math.round(val)}k</b></span>
+                <button class="btn" style="width:auto; padding:8px 15px; background:#10b981; color:white; font-size:0.75rem" onclick="pay('${f}','${t}',${Math.round(val)})">Trả nợ</button></div>`;
       }).join('') || '<p style="text-align:center; color:#10b981">Đã sạch nợ! 🎉</p>';
     });
 
+    // Interaction Functions
     document.getElementById('addExpenseBtn').onclick = () => {
       const p = document.getElementById('purpose').value, a = document.getElementById('amount').value,
             payer = document.getElementById('payer').value, d = document.getElementById('date').value,
             parts = Array.from(document.querySelectorAll('#participantsGroup input:checked')).map(i => i.value);
-      if(!p || !a || parts.length === 0) return alert("Điền đủ thông tin!");
+      if(!p || !a || parts.length === 0) return alert("Vui lòng điền đủ thông tin!");
       db.ref('expenses').push({ purpose: p, amount: a, payer, date: d, participants: parts, createdAt: Date.now() });
       document.getElementById('purpose').value = ''; document.getElementById('amount').value = '';
       confetti({ particleCount: 100, spread: 70, origin: { y: 0.8 } });
@@ -224,9 +226,10 @@
 
     window.delEx = (k) => { if(confirm("Xóa giao dịch này?")) db.ref('expenses').child(k).remove(); };
     window.pay = (f, t, a) => {
-      if(confirm(`${f} trả ${a}k cho ${t}?`)) db.ref('expenses').push({ purpose: 'Trả nợ', amount: a, payer: f, date: new Date().toISOString().slice(0,10), participants: [f, t], settlement: true, createdAt: Date.now() });
+      if(confirm(`${f} đã trả ${a}k cho ${t}?`)) 
+        db.ref('expenses').push({ purpose: 'Trả nợ', amount: a, payer: f, date: new Date().toISOString().slice(0,10), participants: [f, t], settlement: true, createdAt: Date.now() });
     };
-    document.getElementById('clearBtn').onclick = () => { if(confirm("Xóa sạch hết?")) db.ref('expenses').remove(); };
+    document.getElementById('clearBtn').onclick = () => { if(confirm("Bạn có chắc muốn xóa sạch toàn bộ lịch sử?")) db.ref('expenses').remove(); };
     document.getElementById('date').value = new Date().toISOString().slice(0,10);
   </script>
 </body>
