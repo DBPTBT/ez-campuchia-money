@@ -8,13 +8,14 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Ma Trận Nợ">
   <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#3b82f6">
 
-  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2489/2489756.png">
-  <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/2489/2489756.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="https://cdn-icons-png.flaticon.com/512/2489/2489756.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="https://cdn-icons-png.flaticon.com/512/2489/2489756.png">
   
-  <link rel="manifest" href="data:application/json;base64,ewogICJnameIjogIk1hIFRy4bqtbiBO4bujIE7huqduIiwKICAic2hvcnRfbmFtZSI6ICJNYSBUcuG6rW4gTuG7oyIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjZmZmZmZmIiwKICAidGhlbWVfY29sb3IiOiAiIzNiODJmNiIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImh0dHBzOi8vY2RuLWljb25zLXBuZy5mbGF0aWNvbi5jb20vNTEyLzI0ODkvMjQ4OTc1Ni5wbmciLAogICAgICAic2l6ZXMiOiAiNTEyeDUxMiIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIKICAgIH0KICBdCn0=">
+  <link rel="manifest" href="data:application/json;base64,ewogICJnameIjogIk1hIFRy4bqtbiBO4bujIE7huqduIiwKICAic2hvcnRfbmFtZSI6ICJNYSBUcuG6rW4gTuG7oyIsCiAgInN0YXJ0X3VybCI6ICIuL2luZGV4Lmh0bWwiLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNmZmZmZmYiLAogICJ0aGVtZV9jb2xvciI6ICIjM2I4MmY2IiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiIjogImh0dHBzOi8vY2RuLWljb25zLXBuZy5mbGF0aWNvbi5jb20vNTEyLzI0ODkvMjQ4OTc1Ni5wbmciLAogICAgICAic2l6ZXMiOiAiMTkyeDE5MiIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIsCiAgICAgICJwdXJwb3NlIjogImFueSBtYXNrYWJsZSIKICAgIH0sCiAgICB7CiAgICAgICJzcmMiIjogImh0dHBzOi8vY2RuLWljb25zLXBuZy5mbGF0aWNvbi5jb20vNTEyLzI0ODkvMjQ4OTc1Ni5wbmciLAogICAgICAic2l6ZXMiOiAiNTEyeDUxMiIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIsCiAgICAgICJwdXJwb3NlIjogImFueSBtYXNrYWJsZSIKICAgIH0KICBdCn0=">
 
-  <title>Ma Trận Nợ Nần - V4.0</title>
+  <title>Ma Trận Nợ Nần</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600;700&display=swap" rel="stylesheet">
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -23,21 +24,16 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
-    :root {
-      --bg-outside: #f1f5f9; --bg-inside: #ffffff; --bg-input: #f8fafc; 
-      --primary: #3b82f6; --accent: #ec4899; --text: #1e293b; --border: #e2e8f0; 
-    }
-    [data-theme="dark"] {
-      --bg-outside: #020617; --bg-inside: #0a1122; --bg-input: #111a2e;
-      --primary: #22d3ee; --accent: #d946ef; --text: #f1f5f9; --border: #1e293b; 
-    }
+    /* CSS Giữ nguyên như cũ, chỉ tối ưu thêm cho App Mode */
+    :root { --bg-outside: #f1f5f9; --bg-inside: #ffffff; --bg-input: #f8fafc; --primary: #3b82f6; --accent: #ec4899; --text: #1e293b; --border: #e2e8f0; }
+    [data-theme="dark"] { --bg-outside: #020617; --bg-inside: #0a1122; --bg-input: #111a2e; --primary: #22d3ee; --accent: #d946ef; --text: #f1f5f9; --border: #1e293b; }
 
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-    body { font-family: 'Lexend', sans-serif; margin: 0; background-color: var(--bg-outside); color: var(--text); display: flex; justify-content: center; overflow-x: hidden; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; outline: none; }
+    body { font-family: 'Lexend', sans-serif; margin: 0; background-color: var(--bg-outside); color: var(--text); display: flex; justify-content: center; overflow-x: hidden; height: 100vh; }
 
-    .app-shell { width: 100%; max-width: 500px; background-color: var(--bg-inside); min-height: 100vh; display: flex; flex-direction: column; position: relative; }
+    .app-shell { width: 100%; max-width: 500px; background-color: var(--bg-inside); height: 100%; display: flex; flex-direction: column; position: relative; }
 
-    header { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg-inside); z-index: 100; }
+    header { padding: env(safe-area-inset-top) 20px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); background: var(--bg-inside); z-index: 100; }
     header h1 { font-size: 1.2rem; margin: 0; background: linear-gradient(90deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; }
 
     .theme-toggle { background: var(--bg-input); border: 1px solid var(--border); width: 40px; height: 40px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
@@ -54,26 +50,18 @@
       -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
     }
 
-    .section-title { font-weight: 700; margin-bottom: 15px; font-size: 0.9rem; color: var(--primary); text-transform: uppercase; }
+    .section-title { font-weight: 700; margin-bottom: 15px; font-size: 0.8rem; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; }
 
-    input, select { 
-      width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border); 
-      background: var(--bg-input); color: var(--text); font-family: inherit; margin-bottom: 12px; outline: none; font-size: 16px;
-    }
+    input, select { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text); font-family: inherit; margin-bottom: 12px; font-size: 16px; }
 
     .checkbox-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-    
-    .person-pill {
-      background: var(--bg-input); padding: 12px; border-radius: 12px;
-      display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 0.9rem;
-      border: 1px solid var(--border); transition: 0.2s;
-    }
+    .person-pill { background: var(--bg-input); padding: 12px; border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 0.9rem; border: 1px solid var(--border); }
     .person-pill input[type="checkbox"] { width: 20px; height: 20px; margin: 0; accent-color: var(--primary); }
-    .person-pill:has(input:checked) { border-color: var(--primary); background: var(--bg-inside); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    .person-pill:has(input:checked) { border-color: var(--primary); background: var(--bg-inside); }
 
     .btn { width: 100%; padding: 16px; border-radius: 15px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; font-family: inherit; }
-    .btn-primary { background: linear-gradient(90deg, var(--primary), var(--accent)); color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-    .btn-primary:active { transform: scale(0.95); }
+    .btn-primary { background: linear-gradient(90deg, var(--primary), var(--accent)); color: white; }
+    .btn-primary:active { transform: scale(0.96); }
 
     .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
     .debt-row { background: var(--bg-input); padding: 15px; border-radius: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); }
@@ -84,11 +72,9 @@
     .nav-icon { font-size: 1.4rem; display: block; margin-bottom: 4px; }
 
     .hidden { display: none !important; }
-    .page { padding-bottom: 130px; }
+    .page { flex: 1; overflow-y: auto; padding-bottom: 120px; }
 
-    .swal2-popup { border-radius: 24px !important; font-family: 'Lexend', sans-serif !important; background: var(--bg-inside) !important; color: var(--text) !important; padding: 2em !important; }
-    .swal2-confirm { background-color: var(--primary) !important; border-radius: 14px !important; font-weight: 700 !important; padding: 12px 30px !important; }
-    .swal2-cancel { border-radius: 14px !important; }
+    .swal2-popup { border-radius: 24px !important; font-family: 'Lexend', sans-serif !important; background: var(--bg-inside) !important; color: var(--text) !important; }
   </style>
 </head>
 <body>
@@ -109,7 +95,7 @@
         </div>
         <label style="font-size: 0.75rem; font-weight: 700; margin-bottom: 6px; display: block; opacity: 0.7;">CHỦ NỢ</label>
         <select id="payer"></select>
-        <label style="font-size: 0.75rem; font-weight: 700; margin-bottom: 10px; display: block; opacity: 0.7;">DANH SÁCH CON NỢ KHÓ ĐÒI</label>
+        <label style="font-size: 0.75rem; font-weight: 700; margin-bottom: 10px; display: block; opacity: 0.7;">DANH SÁCH CON NỢ</label>
         <div class="checkbox-group" id="participantsGroup"></div>
         <button class="btn btn-primary" id="addExpenseBtn">XÁC NHẬN GIAO DỊCH</button>
       </div>
@@ -124,7 +110,7 @@
         <div class="section-title">🕒 NHẬT KÝ CHI TIÊU</div>
         <div id="detailsBody"></div>
         <div style="text-align: center; margin-top: 25px;">
-          <button id="clearBtn" style="background:none; border:none; color: #ef4444; font-size: 0.7rem; text-decoration: underline; opacity: 0.6;">Xóa sạch toàn bộ dữ liệu</button>
+          <button id="clearBtn" style="background:none; border:none; color: #ef4444; font-size: 0.7rem; text-decoration: underline; opacity: 0.5;">Xóa sạch dữ liệu</button>
         </div>
       </div>
     </div>
@@ -136,7 +122,7 @@
   </div>
 
   <script>
-    // --- FIREBASE CONFIG ---
+    // --- FIREBASE (Giữ nguyên) ---
     const firebaseConfig = {
       apiKey: "AIzaSyCQCqTF0PQ7FW4KE1w-u_VsyOVkBWIWy4w",
       authDomain: "ez-campuchia-money.firebaseapp.com",
@@ -149,27 +135,25 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const showToast = (icon, title) => {
-      Swal.fire({ icon, title, toast: true, position: 'top', showConfirmButton: false, timer: 2000, timerProgressBar: true });
-    };
+    // Custom Tooltip
+    const showToast = (icon, title) => Swal.fire({ icon, title, toast: true, position: 'top', showConfirmButton: false, timer: 2000 });
 
+    // Navigation
     const navItems = { entry: document.getElementById('btn-nav-entry'), history: document.getElementById('btn-nav-history') };
     const pages = { entry: document.getElementById('page-entry'), history: document.getElementById('page-history') };
-
     function switchPage(p) {
-      Object.keys(pages).forEach(k => {
-        pages[k].classList.toggle('hidden', k !== p);
-        navItems[k].classList.toggle('active', k === p);
-      });
+      Object.keys(pages).forEach(k => { pages[k].classList.toggle('hidden', k !== p); navItems[k].classList.toggle('active', k === p); });
     }
     navItems.entry.onclick = () => switchPage('entry');
     navItems.history.onclick = () => switchPage('history');
 
+    // Theme
     const themeBtn = document.getElementById('themeToggle');
     function setTh(t) { document.documentElement.setAttribute('data-theme', t); themeBtn.innerHTML = t === 'dark' ? '🌙' : '☀️'; localStorage.setItem('debt_theme_final', t); }
     themeBtn.onclick = () => setTh(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
     setTh(localStorage.getItem('debt_theme_final') || 'light');
 
+    // Firebase Listeners
     let users = [];
     db.ref('users').on('value', s => {
       users = Object.entries(s.val() || {}).map(([k,v]) => v.name);
@@ -185,24 +169,18 @@
       document.getElementById('detailsBody').innerHTML = rows.map(r => `
         <div class="history-item">
           <div><b>${r.purpose}</b><br><small style="opacity:0.6">${r.payer} trả ${r.amount}k</small></div>
-          <button onclick="delEx('${r.key}')" style="background:none; border:none; font-size:1.1rem; cursor:pointer">🗑️</button>
-        </div>
-      `).join('') || '<p style="text-align:center; opacity:0.5">Chưa có giao dịch</p>';
+          <button onclick="delEx('${r.key}')" style="background:none; border:none; font-size:1.1rem;">🗑️</button>
+        </div>`).join('') || '<p style="text-align:center; opacity:0.5">Trống</p>';
 
       let matrix = {};
       rows.forEach(r => {
-        if(!r.participants || r.participants.length === 0) return;
+        if(!r.participants) return;
         if(r.settlement) {
-          const f = r.payer; const t = r.participants.find(p => p !== f);
+          const f = r.payer, t = r.participants.find(p => p !== f);
           if(f && t) { matrix[`${f}->${t}`] = (matrix[`${f}->${t}`] || 0) - Number(r.amount); matrix[`${t}->${f}`] = (matrix[`${t}->${f}`] || 0) + Number(r.amount); }
         } else {
           const share = Math.floor(Number(r.amount) / r.participants.length);
-          r.participants.forEach(p => {
-            if(p !== r.payer) {
-              matrix[`${p}->${r.payer}`] = (matrix[`${p}->${r.payer}`] || 0) + share;
-              matrix[`${r.payer}->${p}`] = (matrix[`${r.payer}->${p}`] || 0) - share;
-            }
-          });
+          r.participants.forEach(p => { if(p !== r.payer) { matrix[`${p}->${r.payer}`] = (matrix[`${p}->${r.payer}`] || 0) + share; matrix[`${r.payer}->${p}`] = (matrix[`${r.payer}->${p}`] || 0) - share; } });
         }
       });
 
@@ -210,43 +188,34 @@
       document.getElementById('debts').innerHTML = entries.map(([key, val]) => {
         const [f, t] = key.split('->');
         return `<div class="debt-row"><span><b>${f}</b> ➔ ${t}: <b>${Math.round(val)}k</b></span>
-                <button class="btn" style="width:auto; padding:8px 15px; background:#10b981; color:white; font-size:0.75rem" onclick="pay('${f}','${t}',${Math.round(val)})">Trả nợ</button></div>`;
+                <button class="btn" style="width:auto; padding:8px 15px; background:#10b981; color:white; font-size:0.75rem" onclick="pay('${f}','${t}',${Math.round(val)})">Trả</button></div>`;
       }).join('') || '<p style="text-align:center; color:#10b981">Đã sạch nợ! 🎉</p>';
     });
 
+    // Actions
     document.getElementById('addExpenseBtn').onclick = () => {
-      const p = document.getElementById('purpose').value, a = document.getElementById('amount').value,
-            payer = document.getElementById('payer').value, d = document.getElementById('date').value,
+      const p = document.getElementById('purpose').value, a = document.getElementById('amount').value, payer = document.getElementById('payer').value, d = document.getElementById('date').value,
             parts = Array.from(document.querySelectorAll('#participantsGroup input:checked')).map(i => i.value);
-      if(!p || !a || parts.length === 0) return showToast('warning', 'Nhập thiếu thông tin rồi!');
-      
+      if(!p || !a || parts.length === 0) return showToast('warning', 'Thiếu thông tin!');
       db.ref('expenses').push({ purpose: p, amount: a, payer, date: d, participants: parts, createdAt: Date.now() });
       document.getElementById('purpose').value = ''; document.getElementById('amount').value = '';
       confetti({ particleCount: 100, spread: 70, origin: { y: 0.8 } });
-      showToast('success', 'Đã ghi sổ!');
+      showToast('success', 'Xong!');
     };
 
     window.delEx = (k) => {
-      Swal.fire({
-        title: 'Xóa giao dịch này?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Xóa', cancelButtonText: 'Không'
-      }).then((res) => { if(res.isConfirmed) { db.ref('expenses').child(k).remove(); showToast('success', 'Đã xóa'); } });
+      Swal.fire({ title: 'Xóa?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Có', cancelButtonText: 'Không' })
+      .then((res) => { if(res.isConfirmed) db.ref('expenses').child(k).remove(); });
     };
 
     window.pay = (f, t, a) => {
-      Swal.fire({
-        title: 'Trả nợ', text: `${f} đã trả ${a}k cho ${t}?`, icon: 'question', showCancelButton: true, confirmButtonText: 'Đúng vậy', cancelButtonText: 'Chưa'
-      }).then((res) => {
-        if(res.isConfirmed) {
-          db.ref('expenses').push({ purpose: 'Trả nợ', amount: a, payer: f, date: new Date().toISOString().slice(0,10), participants: [f, t], settlement: true, createdAt: Date.now() });
-          showToast('success', 'Đã tất toán');
-        }
-      });
+      Swal.fire({ title: 'Trả nợ', text: `${f} trả ${a}k cho ${t}?`, icon: 'question', showCancelButton: true, confirmButtonText: 'Đúng' })
+      .then((res) => { if(res.isConfirmed) db.ref('expenses').push({ purpose: 'Trả nợ', amount: a, payer: f, date: new Date().toISOString().slice(0,10), participants: [f, t], settlement: true, createdAt: Date.now() }); });
     };
 
     document.getElementById('clearBtn').onclick = () => {
-      Swal.fire({
-        title: 'Xóa sạch tất cả?', icon: 'error', showCancelButton: true, confirmButtonText: 'Xóa hết', cancelButtonText: 'Hủy'
-      }).then((res) => { if(res.isConfirmed) { db.ref('expenses').remove(); showToast('success', 'Đã dọn dẹp'); } });
+      Swal.fire({ title: 'Xóa hết?', icon: 'error', showCancelButton: true, confirmButtonText: 'Xóa' })
+      .then((res) => { if(res.isConfirmed) db.ref('expenses').remove(); });
     };
     document.getElementById('date').value = new Date().toISOString().slice(0,10);
   </script>
