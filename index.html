@@ -169,11 +169,13 @@
       const rows = Object.entries(data).map(([k, v]) => ({ key: k, ...v }));
       rows.sort((a,b) => b.createdAt - a.createdAt);
 
-      document.getElementById('detailsBody').innerHTML = rows.map(r => `
-        <div class="history-item">
-          <div><b>${r.purpose}</b><br><small style="opacity:0.6">${r.payer} trả ${r.amount}k</small></div>
-          <button onclick="delEx('${r.key}')" style="background:none; border:none; font-size:1.1rem;">🗑️</button>
-        </div>`).join('') || '<p style="text-align:center; opacity:0.5">Trống</p>';
+      // Cập nhật phần hiển thị chi tiết (bên trong hàm db.ref('expenses').on)
+document.getElementById('detailsBody').innerHTML = rows.map(r => `
+  <div class="history-item" onclick="showDetail('${r.purpose}', '${r.payer}', '${r.amount}', '${r.date}', '${r.participants ? r.participants.join(', ') : ''}')">
+    <div style="flex: 1"><b>${r.purpose}</b><br><small style="opacity:0.6">${r.payer} trả ${r.amount}k</small></div>
+    <button onclick="event.stopPropagation(); delEx('${r.key}')" style="background:none; border:none; font-size:1.1rem; cursor:pointer">🗑️</button>
+  </div>
+`).join('') || '<p style="text-align:center; opacity:0.5">Chưa có giao dịch</p>';
 
       let matrix = {};
       rows.forEach(r => {
@@ -221,6 +223,25 @@
       .then((res) => { if(res.isConfirmed) db.ref('expenses').remove(); });
     };
     document.getElementById('date').value = new Date().toISOString().slice(0,10);
+
+    // Hàm hiển thị popup chi tiết
+window.showDetail = (purpose, payer, amount, date, participants) => {
+  Swal.fire({
+    title: 'Chi tiết giao dịch',
+    html: `
+      <div style="text-align: left; font-size: 0.95rem; line-height: 1.6;">
+        <p><b>Mục chi:</b> ${purpose}</p>
+        <p><b>Người trả:</b> ${payer}</p>
+        <p><b>Số tiền:</b> ${amount}k</p>
+        <p><b>Ngày:</b> ${date}</p>
+        <p><b>Người tham gia:</b><br><span style="color: var(--primary); font-weight: 600;">${participants}</span></p>
+      </div>
+    `,
+    confirmButtonText: 'Đóng',
+    confirmButtonColor: '#3b82f6',
+    customClass: { popup: 'swal2-popup' }
+  });
+};
   </script>
 </body>
 </html>
