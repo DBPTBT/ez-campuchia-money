@@ -225,7 +225,9 @@ document.getElementById('detailsBody').innerHTML = rows.map(r => `
     document.getElementById('date').value = new Date().toISOString().slice(0,10);
 
 window.showDetail = (purpose, payer, amount, date, participants) => {
-  // Ngăn chặn sự kiện lan tỏa hoặc thay đổi trạng thái cuộn
+  // Lấy vị trí cuộn hiện tại của trang ngay trước khi mở popup
+  const scrollPos = window.pageYOffset || document.documentElement.scrollTop;
+
   Swal.fire({
     title: 'Chi tiết giao dịch',
     html: `
@@ -240,8 +242,19 @@ window.showDetail = (purpose, payer, amount, date, participants) => {
     confirmButtonText: 'Đóng',
     confirmButtonColor: '#3b82f6',
     customClass: { popup: 'swal2-popup' },
-    // Thuộc tính quan trọng để không làm mất tiêu điểm (focus) cuộn trang
-    returnFocus: false 
+    
+    // Tắt các tính năng ép cuộn trang
+    allowOutsideClick: true,
+    returnFocus: false, // Không trả focus về phần tử cũ
+    
+    // Khi popup vừa mở xong, ép trang cuộn về đúng vị trí cũ
+    didOpen: () => {
+      window.scrollTo(0, scrollPos);
+    },
+    // Khi popup đóng, cũng giữ nguyên vị trí
+    willClose: () => {
+      window.scrollTo(0, scrollPos);
+    }
   });
 };
   </script>
