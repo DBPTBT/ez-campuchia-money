@@ -124,8 +124,7 @@
     </nav>
   </div>
 
- <script>
-    // --- FIREBASE (Giữ nguyên) ---
+<script>
     const firebaseConfig = {
       apiKey: "AIzaSyCQCqTF0PQ7FW4KE1w-u_VsyOVkBWIWy4w",
       authDomain: "ez-campuchia-money.firebaseapp.com",
@@ -138,7 +137,6 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // Custom Tooltip & Navigation
     const showToast = (icon, title) => Swal.fire({ icon, title, toast: true, position: 'top', showConfirmButton: false, timer: 2000 });
     const navItems = { entry: document.getElementById('btn-nav-entry'), history: document.getElementById('btn-nav-history') };
     const pages = { entry: document.getElementById('page-entry'), history: document.getElementById('page-history') };
@@ -149,13 +147,11 @@
     navItems.entry.onclick = () => switchPage('entry');
     navItems.history.onclick = () => switchPage('history');
 
-    // Theme
     const themeBtn = document.getElementById('themeToggle');
     function setTh(t) { document.documentElement.setAttribute('data-theme', t); themeBtn.innerHTML = t === 'dark' ? '🌙' : '☀️'; localStorage.setItem('debt_theme_final', t); }
     themeBtn.onclick = () => setTh(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
     setTh(localStorage.getItem('debt_theme_final') || 'light');
 
-    // Firebase Listeners
     db.ref('users').on('value', s => {
       const users = Object.entries(s.val() || {}).map(([k,v]) => v.name);
       document.getElementById('payer').innerHTML = users.map(u => `<option value="${u}">${u}</option>`).join('');
@@ -164,15 +160,30 @@
 
     db.ref('expenses').on('value', s => {
       const data = s.val() || {};
-      const rows = Object.entries(data).map(([k, v]) => ({ key: k, ...v })).sort((a,b) => b.createdAt - a.createdAt);
+      const rows = Object.entries(data).map(([k, v]) => ({ key: k, ...v }));
+      rows.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-      document.getElementById('detailsBody').innerHTML = rows.map(r => `
-        <div class="history-item" onclick="showDetail('${r.purpose}', '${r.payer}', '${r.amount}', '${r.date}', '${(r.participants || []).join(', ')}')" style="cursor: pointer;">
-          <div style="flex: 1"><b>${r.purpose}</b><br><small style="opacity:0.6">${r.payer} trả ${r.amount}k</small></div>
-          <button onclick="event.stopPropagation(); delEx('${r.key}')" style="background:none; border:none; font-size:1.1rem; cursor:pointer">🗑️</button>
+      // Render Nhật ký (Nhóm theo ngày)
+      const grouped = rows.reduce((acc, row) => {
+        const date = row.date || 'Khác';
+        if (!acc[date]) acc[date] = [];
+        acc[date].push(row);
+        return acc;
+      }, {});
+
+      document.getElementById('detailsBody').innerHTML = Object.keys(grouped).sort((a, b) => new Date(b) - new Date(a)).map(date => `
+        <div style="margin-bottom: 20px;">
+          <div style="font-size: 0.75rem; font-weight: 700; color: var(--primary); margin-bottom: 5px; opacity: 0.8; border-bottom: 1px solid var(--border);">${date}</div>
+          ${grouped[date].map(r => `
+            <div class="history-item" onclick="showDetail('${r.purpose}', '${r.payer}', '${r.amount}', '${r.date}', '${(r.participants || []).join(', ')}')" style="cursor: pointer; padding: 10px 0;">
+              <div style="flex: 1"><b>${r.purpose}</b><br><small style="opacity:0.6">${r.payer} trả ${r.amount}k</small></div>
+              <button onclick="event.stopPropagation(); delEx('${r.key}')" style="background:none; border:none; font-size:1.1rem; cursor:pointer">🗑️</button>
+            </div>
+          `).join('')}
         </div>
       `).join('') || '<p style="text-align:center; opacity:0.5">Chưa có giao dịch</p>';
 
+      // Tính toán Ma trận nợ
       let matrix = {};
       rows.forEach(r => {
         if(!r.participants) return;
@@ -193,7 +204,6 @@
       }).join('') || '<p style="text-align:center; color:#10b981">Đã sạch nợ! 🎉</p>';
     });
 
-    // Actions
     document.getElementById('addExpenseBtn').onclick = () => {
       const p = document.getElementById('purpose').value, a = document.getElementById('amount').value, payer = document.getElementById('payer').value, d = document.getElementById('date').value,
             parts = Array.from(document.querySelectorAll('#participantsGroup input:checked')).map(i => i.value);
