@@ -124,7 +124,7 @@
     </nav>
   </div>
 
-  <script>
+ <script>
     // --- FIREBASE (Giữ nguyên) ---
     const firebaseConfig = {
       apiKey: "AIzaSyCQCqTF0PQ7FW4KE1w-u_VsyOVkBWIWy4w",
@@ -138,12 +138,11 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // Custom Tooltip
+    // Custom Tooltip & Navigation
     const showToast = (icon, title) => Swal.fire({ icon, title, toast: true, position: 'top', showConfirmButton: false, timer: 2000 });
-
-    // Navigation
     const navItems = { entry: document.getElementById('btn-nav-entry'), history: document.getElementById('btn-nav-history') };
     const pages = { entry: document.getElementById('page-entry'), history: document.getElementById('page-history') };
+    
     function switchPage(p) {
       Object.keys(pages).forEach(k => { pages[k].classList.toggle('hidden', k !== p); navItems[k].classList.toggle('active', k === p); });
     }
@@ -156,78 +155,23 @@
     themeBtn.onclick = () => setTh(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
     setTh(localStorage.getItem('debt_theme_final') || 'light');
 
-    // 1. Firebase Listeners (Thay thế đoạn hiển thị Nhật ký chi tiêu)
+    // Firebase Listeners
+    db.ref('users').on('value', s => {
+      const users = Object.entries(s.val() || {}).map(([k,v]) => v.name);
+      document.getElementById('payer').innerHTML = users.map(u => `<option value="${u}">${u}</option>`).join('');
+      document.getElementById('participantsGroup').innerHTML = users.map(u => `<label class="person-pill"><input type="checkbox" value="${u}"><span>${u}</span></label>`).join('');
+    });
+
     db.ref('expenses').on('value', s => {
       const data = s.val() || {};
-      const rows = Object.entries(data).map(([k, v]) => ({ key: k, ...v }));
-      rows.sort((a,b) => b.createdAt - a.createdAt);
+      const rows = Object.entries(data).map(([k, v]) => ({ key: k, ...v })).sort((a,b) => b.createdAt - a.createdAt);
 
-      const detailsContainer = document.getElementById('detailsBody');
-      detailsContainer.innerHTML = rows.map(r => `
-        <div class="history-item" 
-             data-purpose="${r.purpose}" 
-             data-payer="${r.payer}" 
-             data-amount="${r.amount}" 
-             data-date="${r.date}" 
-             data-parts="${(r.participants || []).join(', ')}"
-             style="cursor: pointer;">
-          <div style="flex: 1">
-            <b>${r.purpose}</b><br>
-            <small style="opacity:0.6">${r.payer} trả ${r.amount}k</small>
-          </div>
-          <button class="del-btn-fix" data-key="${r.key}" 
-                  style="background:none; border:none; font-size:1.1rem; cursor:pointer; padding: 10px;">
-            🗑️
-          </button>
+      document.getElementById('detailsBody').innerHTML = rows.map(r => `
+        <div class="history-item" onclick="showDetail('${r.purpose}', '${r.payer}', '${r.amount}', '${r.date}', '${(r.participants || []).join(', ')}')" style="cursor: pointer;">
+          <div style="flex: 1"><b>${r.purpose}</b><br><small style="opacity:0.6">${r.payer} trả ${r.amount}k</small></div>
+          <button onclick="event.stopPropagation(); delEx('${r.key}')" style="background:none; border:none; font-size:1.1rem; cursor:pointer">🗑️</button>
         </div>
       `).join('') || '<p style="text-align:center; opacity:0.5">Chưa có giao dịch</p>';
-
-      // Xử lý sự kiện Click cho từng dòng (Xem chi tiết)
-      document.querySelectorAll('.history-item').forEach(item => {
-        item.addEventListener('click', function(e) {
-          // Nếu bấm trúng nút xóa (hoặc icon bên trong nút xóa) thì không hiện chi tiết
-          if (e.target.closest('.del-btn-fix')) return;
-
-          const d = this.dataset;
-          showDetail(d.purpose, d.payer, d.amount, d.date, d.parts);
-        });
-      });
-
-      // Xử lý sự kiện Click cho nút Xóa (Có cảnh báo)
-      document.querySelectorAll('.del-btn-fix').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-          e.stopPropagation(); // Ngăn chặn mở popup chi tiết
-          const key = this.dataset.key;
-          
-          Swal.fire({
-            title: 'Xác nhận xóa?',
-            text: "Dữ liệu này sẽ biến mất khỏi hệ thống!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#ef4444',
-            cancelButtonColor: '#64748b',
-            confirmButtonText: 'Xóa ngay',
-            cancelButtonText: 'Hủy',
-            heightAuto: false // Giữ vị trí màn hình
-          }).then((result) => {
-            if (result.isConfirmed) {
-              db.ref('expenses').child(key).remove();
-              showToast('success', 'Đã xóa giao dịch');
-            }
-          });
-        });
-      });
-
-      // --- Giữ nguyên logic tính toán Ma trận nợ (matrix) phía dưới của bạn ---
-      let matrix = {};
-      // ... (code matrix cũ của bạn giữ nguyên)
-      // Cập nhật phần hiển thị chi tiết (bên trong hàm db.ref('expenses').on)
-document.getElementById('detailsBody').innerHTML = rows.map(r => `
-  <div class="history-item" onclick="event.preventDefault(); showDetail('${r.purpose}', '${r.payer}', '${r.amount}', '${r.date}', '${r.participants ? r.participants.join(', ') : ''}')" style="cursor: pointer;">
-    <div style="flex: 1"><b>${r.purpose}</b><br><small style="opacity:0.6">${r.payer} trả ${r.amount}k</small></div>
-    <button onclick="event.stopPropagation(); delEx('${r.key}')" style="background:none; border:none; font-size:1.1rem; cursor:pointer">🗑️</button>
-  </div>
-`).join('') || '<p style="text-align:center; opacity:0.5">Chưa có giao dịch</p>';
 
       let matrix = {};
       rows.forEach(r => {
@@ -274,27 +218,26 @@ document.getElementById('detailsBody').innerHTML = rows.map(r => `
       Swal.fire({ title: 'Xóa hết?', icon: 'error', showCancelButton: true, confirmButtonText: 'Xóa' })
       .then((res) => { if(res.isConfirmed) db.ref('expenses').remove(); });
     };
+
     document.getElementById('date').value = new Date().toISOString().slice(0,10);
 
-window.showDetail = (purpose, payer, amount, date, participants) => {
-  Swal.fire({
-    title: 'Chi tiết giao dịch',
-    html: `
-      <div style="text-align: left; font-size: 0.95rem; line-height: 1.6;">
-        <p><b>Mục chi:</b> ${purpose}</p>
-        <p><b>Người trả:</b> ${payer}</p>
-        <p><b>Số tiền:</b> ${amount}k</p>
-        <p><b>Ngày:</b> ${date}</p>
-        <p><b>Người tham gia:</b><br><span style="color: var(--primary); font-weight: 600;">${participants}</span></p>
-      </div>
-    `,
-    confirmButtonText: 'Đóng',
-    confirmButtonColor: '#3b82f6',
-    customClass: { popup: 'swal2-popup' },
-    heightAuto: false, // Ngăn SweetAlert2 tự động thay đổi chiều cao trang
-    allowOutsideClick: true
-  });
-};
+    window.showDetail = (purpose, payer, amount, date, participants) => {
+      Swal.fire({
+        title: 'Chi tiết giao dịch',
+        html: `<div style="text-align: left; font-size: 0.95rem; line-height: 1.6;">
+                <p><b>Mục chi:</b> ${purpose}</p>
+                <p><b>Người trả:</b> ${payer}</p>
+                <p><b>Số tiền:</b> ${amount}k</p>
+                <p><b>Ngày:</b> ${date}</p>
+                <p><b>Người tham gia:</b><br><span style="color: var(--primary); font-weight: 600;">${participants}</span></p>
+               </div>`,
+        confirmButtonText: 'Đóng',
+        confirmButtonColor: '#3b82f6',
+        customClass: { popup: 'swal2-popup' },
+        heightAuto: false,
+        allowOutsideClick: true
+      });
+    };
   </script>
 </body>
 </html>
