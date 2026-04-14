@@ -171,7 +171,7 @@
 
       // Cập nhật phần hiển thị chi tiết (bên trong hàm db.ref('expenses').on)
 document.getElementById('detailsBody').innerHTML = rows.map(r => `
-  <div class="history-item" onclick="showDetail('${r.purpose}', '${r.payer}', '${r.amount}', '${r.date}', '${r.participants ? r.participants.join(', ') : ''}')">
+  <div class="history-item" onclick="event.preventDefault(); showDetail('${r.purpose}', '${r.payer}', '${r.amount}', '${r.date}', '${r.participants ? r.participants.join(', ') : ''}')" style="cursor: pointer;">
     <div style="flex: 1"><b>${r.purpose}</b><br><small style="opacity:0.6">${r.payer} trả ${r.amount}k</small></div>
     <button onclick="event.stopPropagation(); delEx('${r.key}')" style="background:none; border:none; font-size:1.1rem; cursor:pointer">🗑️</button>
   </div>
@@ -224,8 +224,8 @@ document.getElementById('detailsBody').innerHTML = rows.map(r => `
     };
     document.getElementById('date').value = new Date().toISOString().slice(0,10);
 
-    // Hàm hiển thị popup chi tiết
 window.showDetail = (purpose, payer, amount, date, participants) => {
+  // Ngăn chặn sự kiện lan tỏa hoặc thay đổi trạng thái cuộn
   Swal.fire({
     title: 'Chi tiết giao dịch',
     html: `
@@ -239,7 +239,9 @@ window.showDetail = (purpose, payer, amount, date, participants) => {
     `,
     confirmButtonText: 'Đóng',
     confirmButtonColor: '#3b82f6',
-    customClass: { popup: 'swal2-popup' }
+    customClass: { popup: 'swal2-popup' },
+    // Thuộc tính quan trọng để không làm mất tiêu điểm (focus) cuộn trang
+    returnFocus: false 
   });
 };
   </script>
